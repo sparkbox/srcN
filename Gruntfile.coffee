@@ -12,23 +12,29 @@ module.exports = (grunt) ->
 
       javascript:
         files: ["src/**/*.coffee"]
-        tasks: "coffee"
+        tasks: "coffee:src"
 
       jasmine:
-        files: ["dist/*.js", "specs/**/*.*"]
-        tasks: "jasmine"
+        files: ["bin/*.js", "specs/**/*.*"]
+        tasks: "test"
 
     coffee:
-      files: "dist/srcN.js": "src/srcN.coffee"
+      src:
+        options:
+          bare: true
+        files: "bin/srcN.js": "src/srcN.coffee"
+      jasmine_specs:
+        files: grunt.file.expandMapping(["specs/*.coffee"], "specs/js/", {
+          rename: (destBase, destPath) ->
+            destBase + destPath.replace(/\.coffee$/, ".js").replace(/specs\//, "")
+        })
 
     jasmine:
+      src: "bin/srcN.js"
       options:
+        specs: "specs/js/*Spec.js"
         helpers: "specs/js/*Helper.js"
-
-      core:
-        src: ["dist/srcN.js"]
-        options:
-          specs: "specs/js/*Spec.js"
+        vendor: ["specs/lib/jquery.min.js", "specs/lib/jasmine-fixture.js"]
 
 
   grunt.loadNpmTasks "grunt-contrib-coffee"
@@ -36,5 +42,5 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-contrib-jasmine"
   grunt.loadNpmTasks "grunt-notify"
 
-  # Default task
-  grunt.registerTask "default", ["coffee", "jasmine"]
+  grunt.registerTask "test", ["coffee:jasmine_specs", "jasmine"]
+  grunt.registerTask "default", ["coffee:src", "test"]
