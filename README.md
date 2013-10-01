@@ -20,3 +20,4 @@ srcN polyfill
 - Update the Readme with more info
 - Think of other things that need to be done
 - Add more images with other sources and breakpoints to the example
+- Add fallback code for older browsers
