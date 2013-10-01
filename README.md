@@ -14,7 +14,8 @@ srcN polyfill
 ## Todo
 
 - Write more tests
-- Develop performance tests to see which files are getting downloaded on which browsers/screen sizes, etc. (jsperf.com?)
+- Develop performance tests to see which files are getting downloaded on which browsers/screen sizes, etc.
+  - Are there tools we could use for this?
 - Run performance tests
 - Find a way to implement different syntaxes
 - Update the Readme with more info
