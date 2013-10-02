@@ -4,36 +4,49 @@
   w.srcN = ->
 
     _getSrc = (img) ->
-      attrs = {}
+      result =
+        el: img
+        srcs: {}
 
       for attr in img.attributes
-        if attr.name.match(/src(0-9)*/)
-          values = attr.nodeValue.match(/(\(.*\))*\s*(.*)/)
-          attrs[attr.name] =
+        if attr.name.match(/src-*(0-9)*/)
+          values = attr.nodeValue.match(/(\(.*\))*\s*([\S]*)\s*([\.\d])*x*/)
+          result.srcs[attr.name] =
             mq: values[1]
             src: values[2]
+            resolution: values[3]
 
-      return attrs
+      return result
+
 
     _getImgs = ->
       document.getElementsByTagName "img"
 
-    _setImg = (img, src) ->
-      img.src = src
 
-    _createListener = (img, data) ->
-      if data.mq
-        window.matchMedia( data.mq ).addListener ->
-          console.log "Setting image to #{data.src} for #{data.mq}"
-          _setImg img, data.src
+    _setImg = (data) ->
+      match = false
+      for key, value of data.srcs
+        if window.matchMedia( value.mq ).matches
+          console.log "Image updated"
+          data.el.src = value.src
+          match = true
+
+      data.el.src = data.srcs.src.src unless match
+
+
+    _createListeners = (data) ->
+      for key, value of data.srcs
+        if value.mq
+          window.matchMedia( value.mq ).addListener ->
+            console.log "#{value.mq} triggered on #{data.el}."
+            _setImg data
+
 
     init = ->
       imgs = _getImgs()
       for img in imgs
-        srcs = _getSrc img
-
-        for key, value of srcs
-          _createListener img, value
+        candidates = _getSrc img
+        _createListeners candidates
 
     getSrc: _getSrc
     init: init
