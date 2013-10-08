@@ -1,14 +1,36 @@
 <html>
 <head>
   <title>srcN Examples</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+  <style>
+    body {
+      width: 100%;
+    }
+    @media (min-width: 1000px) {
+      body {
+        background: #555;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <img id="obama-picture" src="images/president-small.jpg" src-1="(min-width: 500px) images/president-medium.jpg" src-2="(min-width: 800px) images/president-large.jpg" alt="President Obama">
+  <pre>&lt;img id="obama-picture"
+    src="images/president-small.jpg"
+    src-1="(min-width: 300px) images/president-medium.jpg"
+    src-2="(min-width: 500px) images/president-large.jpg"
+    alt="President Obama"&gt;
+  </pre>
+  <img id="obama-picture" src="images/president-small.jpg" src-1="(min-width: 300px) images/president-medium.jpg" src-2="(min-width: 500px) images/president-large.jpg" alt="President Obama">
+
+  <pre>&lt;img id="obama-picture"
+  src="images/president-small.jpg"
+  src-1="(min-width: 1000px) images/president-medium.jpg 2x"
+  alt="President Obama"&gt;
+  </pre>
+  <img id="obama-picture" src="images/president-small.jpg" src-1="(min-width: 1000px) images/president-medium.jpg 2x" alt="President Obama">
 
   <script src="../bin/srcN.js"></script>
-  <script>
-    srcN().init();
-  </script>
 </body>
 </html>
