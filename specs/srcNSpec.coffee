@@ -1,29 +1,5 @@
 describe "srcN", ->
 
-  xit "should be able to get a list of srcN attributes", ->
-
-    img = affix("img#idTest.classTest[src=\"srcTest\"][src-1=\"(min-width: 10em) srcTest1\"][src-2=\"(min-width: 20em) srcTest2\"]")[0]
-
-    expect(srcN._getSrc(img)).toEqual
-      el: img
-      srcs:
-        src:
-          mq: undefined
-          src: "srcTest"
-          resolution: undefined
-        "src-1":
-          mq: "(min-width: 10em)"
-          src: "srcTest1"
-          resolution: undefined
-        "src-2":
-          mq: "(min-width: 20em)"
-          src: "srcTest2"
-          resolution: undefined
-
-
-    expect(srcN._checkResolution(1)).toEqual true
-
-
   describe "determining the syntax for an img tag", ->
 
     it """
@@ -70,74 +46,50 @@ describe "srcN", ->
       img = affix("img[src-1=\"(max-width: 400px) pic-small.jpg\"]")[0]
       srcN._addSyntax_a img
 
-      expect(srcN.mqs).toEqual [
-        mq: "(max-width: 400px)"
-        imgs: [
+      expect(srcN.mqs).toEqual
+        "(max-width: 400px)": [
           img: img
           src: "pic-small.jpg"
         ]
-      ]
 
     it "can parse the 'b' syntax into it's parts", ->
-      srcN.mqs = []
+      srcN.mqs = {}
       img = affix("img[src-1=\"pic.png, picHigh.png 2x, picLow.png .5x\"]")[0]
 
       expect(srcN._parse_b(img)).toEqual [
-        mq: """
-        (-webkit-min-device-pixel-ratio: 1),
-        (min-resolution: #{1*96}dpi)
-        """
+        mq: "(-webkit-min-device-pixel-ratio: 1), (min-resolution: 96dpi)"
         src: "pic.png"
-      ,
-        mq: """
-        (-webkit-min-device-pixel-ratio: 2),
-        (min-resolution: #{2*96}dpi)
-        """
+       ,
+        mq: "(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)"
         src: "picHigh.png"
-      ,
-        mq: """
-        (-webkit-min-device-pixel-ratio: .5),
-        (min-resolution: #{.5*96}dpi)
-        """
+       ,
+        mq: "(-webkit-min-device-pixel-ratio: .5), (min-resolution: 48dpi)"
         src: "picLow.png"
       ]
 
     it "can add the 'b' syntax", ->
-      srcN.mqs = []
+      srcN.mqs = {}
       img = affix("img[src-1=\"pic.png, picHigh.png 2x, picLow.png .5x\"]")[0]
       srcN._addSyntax_b img
 
-      expect(srcN.mqs).toEqual [
-        mq: """
-        (-webkit-min-device-pixel-ratio: 1),
-        (min-resolution: #{1*96}dpi)
-        """
-        imgs: [
+      expect(srcN.mqs).toEqual
+        "(-webkit-min-device-pixel-ratio: 1), (min-resolution: 96dpi)": [
           img: img
           src: "pic.png"
         ]
-      ,
-        mq: """
-        (-webkit-min-device-pixel-ratio: 2),
-        (min-resolution: #{2*96}dpi)
-        """
-        imgs: [
+        ,
+        "(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)": [
           img: img
           src: "picHigh.png"
         ]
-      ,
-        mq: """
-        (-webkit-min-device-pixel-ratio: .5),
-        (min-resolution: #{.5*96}dpi)
-        """
-        imgs: [
+        ,
+        "(-webkit-min-device-pixel-ratio: .5), (min-resolution: 48dpi)": [
           img: img
           src: "picLow.png"
         ]
-      ]
 
     it "can parse the 'c' syntax into it's parts", ->
-      srcN.mqs = []
+      srcN.mqs = {}
       img = affix("img[src-1=\"100%; pic1.png 160, pic2.png 320, pic3.png 640, pic4.png 1280, pic5.png 2560\"]")[0]
 
       expect(srcN._parse_c(img)).toEqual [
@@ -158,38 +110,52 @@ describe "srcN", ->
       ]
 
     it "can add the 'c' syntax", ->
-      srcN.mqs = []
+      srcN.mqs = {}
       img = affix("img[src-1=\"100%; pic1.png 160, pic2.png 320, pic3.png 640, pic4.png 1280, pic5.png 2560\"]")[0]
       srcN._addSyntax_c img
 
-      expect(srcN.mqs).toEqual [
-        mq: "(min-width: 160px)"
-        imgs: [
+      expect(srcN.mqs).toEqual
+        "(min-width: 160px)": [
           img: img
           src: "pic1.png"
         ]
-      ,
-        mq: "(min-width: 320px)"
-        imgs: [
+        ,
+        "(min-width: 320px)": [
           img: img
           src: "pic2.png"
         ]
-      ,
-        mq: "(min-width: 640px)"
-        imgs: [
+        ,
+        "(min-width: 640px)": [
           img: img
           src: "pic3.png"
         ]
-      ,
-        mq: "(min-width: 1280px)"
-        imgs: [
+        ,
+        "(min-width: 1280px)": [
           img: img
           src: "pic4.png"
         ]
-      ,
-        mq: "(min-width: 2560px)"
-        imgs: [
+        ,
+        "(min-width: 2560px)": [
           img: img
           src: "pic5.png"
         ]
-      ]
+
+    it "can add multiple images to one mq", ->
+      srcN.mqs = {}
+      img_1 = affix("img[src-1=\"(max-width: 400px) pic-1.jpg\"]")[0]
+      img_2 = affix("img[src-1=\"(max-width: 400px) pic-2.jpg\"]")[0]
+      srcN._addSyntax_a img_1
+      srcN._addSyntax_a img_2
+
+      expect(srcN.mqs).toEqual
+        "(max-width: 400px)": [
+          img: img_1
+          src: "pic-1.jpg"
+        ,
+          img: img_2
+          src: "pic-2.jpg"
+        ]
+
+  describe "adding mediaquery listeners", ->
+
+    it "should add "

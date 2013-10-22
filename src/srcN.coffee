@@ -1,7 +1,7 @@
 "use strict"
 srcN =
 
-  mqs: []
+  mqs: {}
 
   syntax:
     a: /\(.*\)\s*\S*/
@@ -9,10 +9,7 @@ srcN =
     c: /(\d*%);\s((\S*)\s(\d*))*/
 
   _resolutionMQ: (res) ->
-    """
-    (-webkit-min-device-pixel-ratio: #{res}),
-    (min-resolution: #{res*96}dpi)
-    """
+    "(-webkit-min-device-pixel-ratio: #{res}), (min-resolution: #{res*96}dpi)"
 
   _checkResolution: (res) ->
     matchMedia("(-webkit-min-device-pixel-ratio: #{res})").matches
@@ -28,12 +25,12 @@ srcN =
             return key
 
   _pushSrc: (img, data) ->
-    @mqs.push
-      mq: data.mq
-      imgs: [
-        img: img
-        src: data.src
-      ]
+    item =
+      img: img
+      src: data.src
+
+    @mqs["#{data.mq}"] = [] unless @mqs["#{data.mq}"]
+    @mqs["#{data.mq}"].push item
 
   _parse_a: (img) ->
     for attr in img.attributes
@@ -87,13 +84,37 @@ srcN =
     for item in srcs
       @_pushSrc img, item
 
+  # _createListeners: ->
+  #   for key, value of @mqs
+  #     if value.mq
+  #       mq = window.matchMedia( value.mq )
+  #       mq.addListener ->
+  #         srcN._setImg data
+
+  #       window.addEventListener( "orientationchange", ->
+  #         srcN._setImg data
+  #       , false )
+
+  #       # srcN._setImg data
+
+  # _setImg: ->
+  #   match = false
+  #   for key, value of data.srcs
+  #     if window.matchMedia( value.mq ).matches
+  #       alert !@._checkResolution(value.resolution)
+  #       break if value.resolution and !@._checkResolution(value.resolution)
+
+  #       data.el.src = value.src
+  #       match = true
+
+  #   data.el.src = data.srcs.src.src unless match
+
   init: ->
     imgs = @._getImgs()
     for img in imgs
       syntax = @._categorizeImg img
-
       @["_addSyntax_#{syntax}"] img
-      candidates = @._getSrc img
-      @._createListeners candidates
+
+      @._createListeners
 
 srcN.init()
