@@ -1,6 +1,8 @@
 "use strict"
 srcN =
 
+  mqs: []
+
   syntax:
     a: /\(.*\)\s*\S*/
     b: /([\S]*),*\s(\S*)\s(\.*\dx)/
@@ -25,36 +27,73 @@ srcN =
           if attr.value.match @syntax[key]
             return key
 
-    return "no src-n match"
+  _pushSrc: (img, data) ->
+    @mqs.push
+      mq: data.mq
+      imgs: [
+        img: img
+        src: data.src
+      ]
 
+  _parse_a: (img) ->
+    for attr in img.attributes
+      if attr.name.match /src-*(0-9)*/
+        split = attr.value.match /(\(.*\))\s*(\S*)/
+        result =
+          mq: split[1]
+          src: split[2]
+        return result
+
+  _addSyntax_a: (img) ->
+    @_pushSrc img, @_parse_a img
+
+  _parse_b: (img) ->
+    srcs = []
+    for attr in img.attributes
+      if attr.name.match /src-*(0-9)*/
+        imgs = attr.value.split ", "
+        for item in imgs
+          split = item.match /^(\S*)\s*(\.*\d)*x*$/
+          res = if split[2]
+            split[2]
+          else
+            1
+
+          srcs.push
+            mq: @_resolutionMQ res
+            src: split[1]
+    return srcs
+
+  _addSyntax_b: (img) ->
+    srcs = @_parse_b img
+    for item in srcs
+      @_pushSrc img, item
+
+  _parse_c: (img) ->
+    srcs = []
+    for attr in img.attributes
+      if attr.name.match /src-*(0-9)*/
+        imgs = attr.value.match(/\d*%; (.*)/)[1].split ", "
+        for item in imgs
+          split = item.match /^(\S*)\s(\d*)$/
+
+          srcs.push
+            mq: "(min-width: #{split[2]}px)"
+            src: split[1]
+    return srcs
+
+  _addSyntax_c: (img) ->
+    srcs = @_parse_c img
+    for item in srcs
+      @_pushSrc img, item
 
   init: ->
     imgs = @._getImgs()
     for img in imgs
       syntax = @._categorizeImg img
+
+      @["_addSyntax_#{syntax}"] img
       candidates = @._getSrc img
       @._createListeners candidates
 
 srcN.init()
-
-
-###
-Example #1
-http://rubular.com/r/p636zxq5SU -> syntax a
-<img src-1="(max-width: 400px) pic-small.jpg"
-     src-2="(max-width: 1000px) pic-medium.jpg"
-     src="pic-large.jpg"
-     alt="Obama talking to a soldier in hospital scrubs.">
-
-Example #2
-http://rubular.com/r/KTovJ8rUGc -> syntax b
-<img src-1="pic.png, picHigh.png 2x, picLow.png .5x">
-
-Example #3
-http://rubular.com/r/E7kQXlirwe -> syntax c
-<img src-1="100%; url1 400, url2 800">
-
-Example #4
-http://rubular.com/r/E7kQXlirwe -> syntax c
-<img src-1="100%; pic1.png 160, pic2.png 320, pic3.png 640, pic4.png 1280, pic5.png 2560">
-###
