@@ -33,21 +33,25 @@ srcN =
     @mqs["#{data.mq}"].push item
 
   _parse_a: (img) ->
+    srcs = []
     for attr in img.attributes
-      if attr.name.match /src-*(0-9)*/
+      if attr.name.match /src-\d/
         split = attr.value.match /(\(.*\))\s*(\S*)/
         result =
           mq: split[1]
           src: split[2]
-        return result
+        srcs.push result
+    return srcs
 
   _addSyntax_a: (img) ->
-    @_pushSrc img, @_parse_a img
+    srcs = @_parse_a img
+    for item in srcs
+      @_pushSrc img, item
 
   _parse_b: (img) ->
     srcs = []
     for attr in img.attributes
-      if attr.name.match /src-*(0-9)*/
+      if attr.name.match /src-\d/
         imgs = attr.value.split ", "
         for item in imgs
           split = item.match /^(\S*)\s*(\.*\d)*x*$/
@@ -69,7 +73,7 @@ srcN =
   _parse_c: (img) ->
     srcs = []
     for attr in img.attributes
-      if attr.name.match /src-*(0-9)*/
+      if attr.name.match /src-\d/
         imgs = attr.value.match(/\d*%; (.*)/)[1].split ", "
         for item in imgs
           split = item.match /^(\S*)\s(\d*)$/
@@ -84,37 +88,33 @@ srcN =
     for item in srcs
       @_pushSrc img, item
 
-  # _createListeners: ->
-  #   for key, value of @mqs
-  #     if value.mq
-  #       mq = window.matchMedia( value.mq )
-  #       mq.addListener ->
-  #         srcN._setImg data
+  _createListeners: ->
+    for key of @mqs
+      mq = window.matchMedia key
+      mq.addListener ->
+        srcN._setImgs()
 
-  #       window.addEventListener( "orientationchange", ->
-  #         srcN._setImg data
-  #       , false )
+      window.addEventListener( "orientationchange", =>
+        srcN._setImgs()
+      , false )
 
-  #       # srcN._setImg data
+      srcN._setImgs()
 
-  # _setImg: ->
-  #   match = false
-  #   for key, value of data.srcs
-  #     if window.matchMedia( value.mq ).matches
-  #       alert !@._checkResolution(value.resolution)
-  #       break if value.resolution and !@._checkResolution(value.resolution)
+  _setImgs: ->
+    for mq of @mqs
+      if matchMedia(mq).matches
+        @_setImg @mqs[mq]
 
-  #       data.el.src = value.src
-  #       match = true
 
-  #   data.el.src = data.srcs.src.src unless match
+  _setImg: (data) ->
+    data[0].img.src = data[0].src
 
   init: ->
-    imgs = @._getImgs()
+    imgs = @_getImgs()
     for img in imgs
-      syntax = @._categorizeImg img
+      syntax = @_categorizeImg img
       @["_addSyntax_#{syntax}"] img
 
-      @._createListeners
+    @_createListeners()
 
 srcN.init()

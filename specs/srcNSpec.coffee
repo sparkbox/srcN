@@ -38,10 +38,21 @@ describe "srcN", ->
 
     it "can parse the 'a' syntax into it's parts", ->
       img = affix("img[src-1=\"(max-width: 400px) pic-small.jpg\"]")[0]
-      expect(srcN._parse_a(img)).toEqual
+      expect(srcN._parse_a(img)).toEqual [
         mq: "(max-width: 400px)"
         src: "pic-small.jpg"
+      ]
 
+    it "can parse multiple 'a' syntax elements into their parts", ->
+      srcN.mqs = {}
+      img = affix("img[src-1=\"(max-width: 400px) pic-small.jpg\"][src-2=\"(max-width: 500px) pic-large.jpg\"]")[0]
+      expect(srcN._parse_a(img)).toEqual [
+        mq: "(max-width: 400px)"
+        src: "pic-small.jpg"
+      ,
+        mq: "(max-width: 500px)"
+        src: "pic-large.jpg"
+      ]
     it "can add the 'a' syntax", ->
       img = affix("img[src-1=\"(max-width: 400px) pic-small.jpg\"]")[0]
       srcN._addSyntax_a img
@@ -59,10 +70,10 @@ describe "srcN", ->
       expect(srcN._parse_b(img)).toEqual [
         mq: "(-webkit-min-device-pixel-ratio: 1), (min-resolution: 96dpi)"
         src: "pic.png"
-       ,
+      ,
         mq: "(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)"
         src: "picHigh.png"
-       ,
+      ,
         mq: "(-webkit-min-device-pixel-ratio: .5), (min-resolution: 48dpi)"
         src: "picLow.png"
       ]
@@ -155,7 +166,3 @@ describe "srcN", ->
           img: img_2
           src: "pic-2.jpg"
         ]
-
-  describe "adding mediaquery listeners", ->
-
-    it "should add "
