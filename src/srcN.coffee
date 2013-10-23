@@ -98,16 +98,18 @@ srcN =
         srcN._setImgs()
       , false )
 
-      srcN._setImgs()
+    srcN._setImgs()
 
   _setImgs: ->
     for mq of @mqs
       if matchMedia(mq).matches
-        @_setImg @mqs[mq]
-
+        for item of @mqs[mq]
+          @_setImg @mqs[mq][item]
 
   _setImg: (data) ->
-    data[0].img.src = data[0].src
+    # Trigger some sort of event here (user defineaable via jQuery or other libray?)
+    console.log "Setting src for #{data.img.id} to #{data.src}"
+    data.img.src = data.src
 
   init: ->
     imgs = @_getImgs()
