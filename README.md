@@ -38,6 +38,7 @@ src-n polyfill
 
 ## Todo
 
+- Fallback to src if no src-N matches
 - Write more tests
 - Develop performance tests to see which files are getting downloaded on which browsers/screen sizes, etc.
   - Are there tools we could use for this?
