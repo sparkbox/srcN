@@ -8,6 +8,18 @@ srcN =
     b: /([\S]*),*\s(\S*)\s(\.*\dx)/
     c: /(\d*%);\s((\S*)\s(\d*))*/
 
+  _sortResolutionMQs: (imgs) ->
+    imgs.sort (a, b) ->
+
+      res_a = a.match(/^(\S*)\s*(\.*\d)*x*$/)[2] or 1
+      res_b = b.match(/^(\S*)\s*(\.*\d)*x*$/)[2] or 1
+
+      if res_a > res_b 
+        1
+      else
+        -1
+
+
   _resolutionMQ: (res) ->
     "(-webkit-min-device-pixel-ratio: #{res}), (min-resolution: #{res*96}dpi)"
 
@@ -52,7 +64,7 @@ srcN =
     srcs = []
     for attr in img.attributes
       if attr.name.match /src-\d/
-        imgs = attr.value.split ", "
+        imgs = @_sortResolutionMQs(attr.value.split ", ")
         for item in imgs
           split = item.match /^(\S*)\s*(\.*\d)*x*$/
           res = if split[2]

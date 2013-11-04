@@ -68,14 +68,14 @@ describe "srcN", ->
       img = affix("img[src-1=\"pic.png, picHigh.png 2x, picLow.png .5x\"]")[0]
 
       expect(srcN._parse_b(img)).toEqual [
+        mq: "(-webkit-min-device-pixel-ratio: .5), (min-resolution: 48dpi)"
+        src: "picLow.png"
+      ,
         mq: "(-webkit-min-device-pixel-ratio: 1), (min-resolution: 96dpi)"
         src: "pic.png"
       ,
         mq: "(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)"
         src: "picHigh.png"
-      ,
-        mq: "(-webkit-min-device-pixel-ratio: .5), (min-resolution: 48dpi)"
-        src: "picLow.png"
       ]
 
     it "can add the 'b' syntax", ->
@@ -166,3 +166,11 @@ describe "srcN", ->
           img: img_2
           src: "pic-2.jpg"
         ]
+
+
+  describe "Handling Resolution MQs", ->
+
+    it "can sort imgs into ascending resolution order", ->
+      imgs = ["images/president-medium.jpg", "images/president-large.jpg 2x", "images/president-small.jpg .5x"]
+
+      expect(srcN._sortResolutionMQs(imgs)).toEqual ["images/president-small.jpg .5x", "images/president-medium.jpg", "images/president-large.jpg 2x"]
